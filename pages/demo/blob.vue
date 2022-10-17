@@ -1,7 +1,7 @@
 <template lang="pug">
 div
   .blob
-    img(src='/blob.svg')
+    img(src='blob.svg')
 </template>
 
 <style scoped>
