@@ -2,6 +2,8 @@
 div
   .blob
     img(src='blob.svg')
+  div
+    nuxt-link(to='/demo/bubble') bubble
 </template>
 
 <style scoped>
