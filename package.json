@@ -9,6 +9,7 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "bubbly-bg": "^1.0.0",
     "core-js": "^3.25.3",
     "nuxt": "^2.15.8",
     "pug": "^3.0.2",
