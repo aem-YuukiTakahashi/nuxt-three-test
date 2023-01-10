@@ -17,7 +17,9 @@ window.bubbly = function (config) {
     const gradient = context.createLinearGradient(0, 0, width, height);
     gradient.addColorStop(0, c.colorStart || "#2AE");
     gradient.addColorStop(1, c.colorStop || "#17B");
-    const nrBubbles = c.bubbles || Math.floor((width + height) * 0.02);
+    let nrBubbles = c.bubbles || Math.floor((width + height) * 0.02);
+    console.log(nrBubbles);
+    if(nrBubbles > 15) nrBubbles = 15;
     const bubbles = [];
     for (let i = 0; i < nrBubbles; i++) {
         bubbles.push({
