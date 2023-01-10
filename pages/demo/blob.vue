@@ -4,6 +4,8 @@ div
     img(src='blob.svg')
   div
     nuxt-link(to='/demo/bubble') bubble
+    br
+    nuxt-link(to='/demo/bubbleThree') bubbleThree
 </template>
 
 <style scoped>
