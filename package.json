@@ -22,6 +22,7 @@
     "vue-template-compiler": "^2.7.10"
   },
   "devDependencies": {
+    "modern-css-reset": "^1.4.0",
     "raw-loader": "^4.0.2"
   }
 }
