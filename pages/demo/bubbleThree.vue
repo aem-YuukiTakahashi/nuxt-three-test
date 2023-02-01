@@ -5,14 +5,14 @@ div
   .wrapper
 
     .inner
-      div CAMEEA TEST
-        div
-          input(v-model="cameraX" placeholder="X")
-        div
-          input(v-model="cameraY" placeholder="Y")
-        div
-          input(v-model="cameraZ" placeholder="Z")
-        button(@click='setCameraPosition') カメラ位置更新
+      //- div CAMEEA TEST
+      //-   div
+      //-     input(v-model="cameraX" placeholder="X")
+      //-   div
+      //-     input(v-model="cameraY" placeholder="Y")
+      //-   div
+      //-     input(v-model="cameraZ" placeholder="Z")
+      //-   button(@click='setCameraPosition') カメラ位置更新
       div LINK
         br
         nuxt-link(to='/demo/blob') blob
@@ -58,6 +58,9 @@ div
 
 <script>
 import * as THREE from "three";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 export default {
   data() {
     return {
@@ -65,20 +68,21 @@ export default {
       scene: null,
       camera: null,
       bubbleList: [],
-      MaxBubbleCount: 100,
+      MaxBubbleCount: 10,
       isAnime: true,
-      cameraX: 500,
-      cameraY: 500,
-      cameraZ: 800,
+      fov: 50, // 視野角
+      composer: null,
     }
   },
   computed: {
+    fovRad() {
+      return (this.fov / 2) * (Math.PI / 180);
+    },
+    distance() {
+      return (window.innerHeight / 2) / Math.tan(this.fovRad);
+    },
     bubbleCount() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      const count = Math.floor((width + height) * 0.02);
-      if(count > this.MaxBubbleCount) return this.MaxBubbleCount;
-      return count;
+      return this.MaxBubbleCount;
     }
   },
   mounted() {
@@ -92,37 +96,34 @@ export default {
 
       this.creatBubble();
 
-      // const camera = new THREE.Camera();
-      // camera.position.z = 1;
-
       const width = window.innerWidth;
       const height = window.innerHeight;
-      const camera = new THREE.PerspectiveCamera(45, width / height);
-      camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
-      camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+      const camera = new THREE.PerspectiveCamera(this.fov, width / height);
+      camera.position.z = this.distance;
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
       this.camera = camera;
 
       const scene = new THREE.Scene();
       this.scene = scene;
+
+      // show axes in the screen
+      // var axes = new THREE.AxesHelper(500);
+      // scene.add(axes);
 
       for(let i = 0; i < this.bubbleList.length; i++) {
         const bubble = this.bubbleList[i];
         scene.add(bubble.mesh);
       }
 
-      // show axes in the screen
-      var axes = new THREE.AxesHelper(500);
-      scene.add(axes);
-
       // 平行光源
-      const directionalLight = new THREE.DirectionalLight(0xffffff);
-      directionalLight.position.set(1, 1, 1);
-      scene.add(directionalLight);
+      // const directionalLight = new THREE.DirectionalLight(0xffffff);
+      // directionalLight.position.set(1, 1, 1);
+      // scene.add(directionalLight);
 
       // ポイント光源
-      const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
-      scene.add(pointLight);
+      // const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
+      // scene.add(pointLight);
 
       // レンダラーを作成
       const renderer = new THREE.WebGLRenderer({
@@ -132,11 +133,23 @@ export default {
       renderer.setClearColor(0x000000, 0);
       this.renderer = renderer;
 
-      this.onWindowResize();
-      window.addEventListener('resize', this.onWindowResize, false);
+      const renderScene = new RenderPass( scene, camera );
 
-      this.render();
+      const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+      bloomPass.threshold = 0;
+      bloomPass.strength = 3;
+      bloomPass.radius = 1;
+
+      const composer = new EffectComposer( this.renderer );
+      composer.addPass( renderScene );
+      composer.addPass( bloomPass );
+      this.composer = composer;
+
+      this.onResize();
+      window.addEventListener('resize', this.onResize, false);
+
       this.animate();
+
     },
     /**
      * アニメーション開始
@@ -146,7 +159,6 @@ export default {
         requestAnimationFrame(this.animate);
         this.render();
       } else {
-        console.log('animate stop');
         return cancelAnimationFrame(this.animate)
       }
     },
@@ -156,6 +168,7 @@ export default {
     render() {
       const width = window.innerWidth;
       const height = window.innerHeight;
+
       for(let i = 0; i < this.bubbleList.length; i++) {
         const bubble = this.bubbleList[i];
         const bubbleMesh = bubble.mesh;
@@ -168,30 +181,19 @@ export default {
 
         bubbleMesh.position.set(afterPosiX, afterPosiY, 0);
 
-        if (afterPosiX - bubble.radius > width) {
-          bubbleMesh.position.set(-bubble.radius, afterPosiY, 0);
-        }
-
-        if (afterPosiX + bubble.radius < 0) {
-          bubbleMesh.position.set(width + bubble.radius, afterPosiY, 0);
-        }
-
-        if (afterPosiY - bubble.radius > height) {
-            bubbleMesh.position.set(afterPosiX, -bubble.radius, 0);
-        }
-
-        if (afterPosiY + bubble.radius < 0) {
-          bubbleMesh.position.set(afterPosiX, height + bubble.radius, 0);
+        if (afterPosiX - bubble.radius > width / 2 ||
+            afterPosiX + bubble.radius < -1 * width / 2 ||
+            afterPosiY - bubble.radius > height / 2 ||
+            afterPosiY + bubble.radius < -1 * height / 2) {
+          bubble.angle = Math.random() * Math.PI * 2;
+          bubble.velocity = 1 + Math.random() * 0.5;
         }
       }
-      this.renderer.render(this.scene, this.camera);
+
+      //this.renderer.render(this.scene, this.camera);
+      this.composer.render();
     },
-    /**
-     * リサイズ処理
-     */
-    onWindowResize() {
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
-    },
+
     /**
      * 表示する泡の作成
      */
@@ -200,28 +202,56 @@ export default {
       const height = window.innerHeight;
 
       for (let i = 0; i < this.bubbleCount; i++) {
-        const radius = 4 + (Math.random() * width / 25);
+        const radius = 4 + (Math.random() * width / 10);
         const geometry = new THREE.SphereGeometry(radius,radius / 2,radius / 2);
         const material = new THREE.MeshBasicMaterial({color: 0x6699FF});
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set(Math.random() * width, Math.random() * height, 0);
+        const posi = this.creatBubblePosition();
+        mesh.position.set(posi.x, posi.y, posi.z);
 
         const obj = {
           mesh: mesh,
           radius: radius,
           angle: ((() => Math.random() * Math.PI * 2)).call(),
-          velocity: ((() => 0.1 + Math.random() * 0.5)).call()
+          velocity: ((() => 1 + Math.random() * 0.5)).call()
         }
 
         this.bubbleList.push(obj);
       }
+
+      console.log(this.bubbleList);
     },
+
     /**
-     * カメラの位置更新
+     * ランダムなpositionを生成する
      */
-    setCameraPosition() {
-      this.camera.position.set(this.cameraX, this.cameraY, this.cameraZ);
-    }
+    creatBubblePosition() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const x = (width / 2) - Math.random() * width;
+      const y = (height / 2) - Math.random() * height;
+      console.log('x =', x, 'y =', y);
+      return {'x': x, 'y': y, 'z': 0};
+    },
+
+    /**
+     * リサイズ処理
+     */
+    onResize() {
+      // サイズを取得
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // カメラのアスペクト比を正す
+      this.camera.aspect = width / height;
+      //this.camera.position.z = this.distance;
+      this.camera.updateProjectionMatrix();
+
+      // レンダラーのサイズを調整する
+      this.renderer.setPixelRatio(window.devicePixelRatio);
+      this.renderer.setSize(width, height);
+      this.composer.setSize(width, height);
+    },
   },
   beforeDestroy: function() {
     this.isAnime = false;
