@@ -5,14 +5,31 @@ div
   .wrapper
 
     .inner
-      //- div CAMEEA TEST
-      //-   div
-      //-     input(v-model="cameraX" placeholder="X")
-      //-   div
-      //-     input(v-model="cameraY" placeholder="Y")
-      //-   div
-      //-     input(v-model="cameraZ" placeholder="Z")
-      //-   button(@click='setCameraPosition') カメラ位置更新
+      div PARAM TEST
+        div
+          p 背景色
+          input(v-model="clearColor" placeholder="背景色")
+        div
+          br
+          p 背景色透過度
+          input(v-model="clearAlpha" placeholder="発光エフェクト: 閾値")
+        div
+          br
+          p 発光エフェクト: 閾値
+          input(v-model="threshold" placeholder="発光エフェクト: 閾値")
+        div
+          br
+          p 発光エフェクト: 強さ
+          input(v-model="strength" placeholder="発光エフェクト: 強さ")
+        div
+          br
+          p 発光エフェクト: 半径
+          input(v-model="radius" placeholder="発光エフェクト: 半径")
+        div
+          br
+          button(@click='setParam') 更新
+          br
+          br
       div LINK
         br
         nuxt-link(to='/demo/blob') blob
@@ -51,8 +68,11 @@ div
 
 .inner {
   width: 90%;
+  max-width: 320px;
   margin: 0 auto 60px;
   text-align: center;
+  padding: 30px;
+  background-color: rgba(255,255,255,.5);
 }
 </style>
 
@@ -61,6 +81,7 @@ import * as THREE from "three";
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ClearPass } from 'three/examples/jsm/postprocessing/ClearPass.js';
 export default {
   data() {
     return {
@@ -72,6 +93,13 @@ export default {
       isAnime: true,
       fov: 50, // 視野角
       composer: null,
+      bloomPass: null,
+      clearPass: null,
+      clearColor: '000000',
+      clearAlpha: 1,
+      threshold: 0,
+      strength: 1,
+      radius: 1,
     }
   },
   computed: {
@@ -80,6 +108,10 @@ export default {
     },
     distance() {
       return (window.innerHeight / 2) / Math.tan(this.fovRad);
+    },
+    bgColor() {
+      const colorValue = parseInt ( this.clearColor.replace("#","0x"), 16 );
+      return new THREE.Color( colorValue );
     },
     bubbleCount() {
       return this.MaxBubbleCount;
@@ -116,15 +148,6 @@ export default {
         scene.add(bubble.mesh);
       }
 
-      // 平行光源
-      // const directionalLight = new THREE.DirectionalLight(0xffffff);
-      // directionalLight.position.set(1, 1, 1);
-      // scene.add(directionalLight);
-
-      // ポイント光源
-      // const pointLight = new THREE.PointLight(0xffffff, 2, 1000);
-      // scene.add(pointLight);
-
       // レンダラーを作成
       const renderer = new THREE.WebGLRenderer({
         canvas: document.querySelector('#myCanvas')
@@ -134,13 +157,19 @@ export default {
       this.renderer = renderer;
 
       const renderScene = new RenderPass( scene, camera );
+      renderScene.clear = false;
 
       const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-      bloomPass.threshold = 0;
-      bloomPass.strength = 3;
-      bloomPass.radius = 1;
+      bloomPass.threshold = this.threshold;
+      bloomPass.strength = this.strength;
+      bloomPass.radius = this.radius;
+      this.bloomPass = bloomPass;
+
+      const clearPass = new ClearPass( this.bgColor, this.clearAlpha );
+      this.clearPass = clearPass;
 
       const composer = new EffectComposer( this.renderer );
+      composer.addPass( clearPass );
       composer.addPass( renderScene );
       composer.addPass( bloomPass );
       this.composer = composer;
@@ -204,7 +233,7 @@ export default {
       for (let i = 0; i < this.bubbleCount; i++) {
         const radius = 4 + (Math.random() * width / 10);
         const geometry = new THREE.SphereGeometry(radius,radius / 2,radius / 2);
-        const material = new THREE.MeshBasicMaterial({color: 0x6699FF});
+        const material = new THREE.MeshBasicMaterial({color: 0xFFFFFF});
         const mesh = new THREE.Mesh(geometry, material);
         const posi = this.creatBubblePosition();
         mesh.position.set(posi.x, posi.y, posi.z);
@@ -252,6 +281,17 @@ export default {
       this.renderer.setSize(width, height);
       this.composer.setSize(width, height);
     },
+    /**
+     * パラメータに応じて更新
+     */
+    setParam() {
+      console.log();
+      this.clearPass.clearColor = this.bgColor;
+      this.clearPass.clearAlpha = this.clearAlpha;
+      this.bloomPass.threshold = this.threshold;
+      this.bloomPass.strength = this.strength;
+      this.bloomPass.radius = this.radius;
+    }
   },
   beforeDestroy: function() {
     this.isAnime = false;
