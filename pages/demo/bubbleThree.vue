@@ -5,7 +5,7 @@ div
   .wrapper
 
     .inner
-      div PARAM TEST
+      div.disp-none PARAM TEST
         div
           p 背景色
           input(v-model="clearColor" placeholder="背景色")
@@ -73,6 +73,10 @@ div
   text-align: center;
   padding: 30px;
   background-color: rgba(255,255,255,.5);
+}
+
+.disp-none {
+  display: none;
 }
 </style>
 
