@@ -2,7 +2,7 @@
 .wrapper
   lv3-envmap-2(:img-list='imgList')
   .kv
-    img(src="/images/demo-1/1366x969.png")
+    img(src="images/demo-1/1366x969.png")
   .inner#inner-1
     .inner__title コンテンツ見出し1
     .inner__wrapper
@@ -38,9 +38,9 @@ export default {
   data() {
     return {
       imgList: [
-					'/images/demo-1/px.png', '/images/demo-1/nx.png',
-					'/images/demo-1/py.png', '/images/demo-1/ny.png',
-					'/images/demo-1/pz.png', '/images/demo-1/nz.png'
+					'images/demo-1/px.png', 'images/demo-1/nx.png',
+					'images/demo-1/py.png', 'images/demo-1/ny.png',
+					'images/demo-1/pz.png', 'images/demo-1/nz.png'
         // "/images/demo-1/200x200-6.png",
         // "/images/demo-1/200x200-4.png",
         // "/images/demo-1/200x200-3.png",
