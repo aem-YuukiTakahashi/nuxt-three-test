@@ -36,9 +36,9 @@ export default {
   data() {
     return {
       imgList: [
-					'/images/demo-1/px.png', '/images/demo-1/nx.png',
-					'/images/demo-1/py.png', '/images/demo-1/ny.png',
-					'/images/demo-1/pz.png', '/images/demo-1/nz.png'
+					'images/demo-1/px.png', 'images/demo-1/nx.png',
+					'images/demo-1/py.png', 'images/demo-1/ny.png',
+					'images/demo-1/pz.png', 'images/demo-1/nz.png'
         // "/images/demo-1/200x200-6.png",
         // "/images/demo-1/200x200-4.png",
         // "/images/demo-1/200x200-3.png",
