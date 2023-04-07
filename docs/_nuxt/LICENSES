@@ -1,18 +1,4 @@
 /*!
- * Vue.js v2.7.12
- * (c) 2014-2022 Evan You
- * Released under the MIT License.
- */
-
-
-/**
- * @license
- * Copyright 2010-2022 Three.js Authors
- * SPDX-License-Identifier: MIT
- */
-
-
-/*!
  * Viewport Extra v2.1.4
  * (c) dsktschy
  * Released under the MIT License.
@@ -47,9 +33,23 @@ PERFORMANCE OF THIS SOFTWARE.
 
 
 /**
+ * @license
+ * Copyright 2010-2022 Three.js Authors
+ * SPDX-License-Identifier: MIT
+ */
+
+
+/**
  * lil-gui
  * https://lil-gui.georgealways.com
  * @version 0.17.0
  * @author George Michael Brower
  * @license MIT
+ */
+
+
+/*!
+ * Vue.js v2.7.12
+ * (c) 2014-2022 Evan You
+ * Released under the MIT License.
  */
