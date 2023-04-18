@@ -14,19 +14,19 @@ div
 
     ul.img-list
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp1.png" data-id="1" />
+        <img class="js-drag-elem" src="images/stamp/stamp1.png" data-id="1" />
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp2.png" data-id="2" />
+        <img class="js-drag-elem" src="images/stamp/stamp2.png" data-id="2" />
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp3.png" data-id="3" />
+        <img class="js-drag-elem" src="images/stamp/stamp3.png" data-id="3" />
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp4.png" data-id="4" />
+        <img class="js-drag-elem" src="images/stamp/stamp4.png" data-id="4" />
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp5.png" data-id="5" />
+        <img class="js-drag-elem" src="images/stamp/stamp5.png" data-id="5" />
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp6.png" data-id="6" />
+        <img class="js-drag-elem" src="images/stamp/stamp6.png" data-id="6" />
       li.img-list__item
-        <img class="js-drag-elem" src="/images/stamp/stamp7.png" data-id="7" />
+        <img class="js-drag-elem" src="images/stamp/stamp7.png" data-id="7" />
 </template>
 
 <script>
