@@ -12,6 +12,7 @@ import GUI from 'lil-gui'
 import * as THREE from "three";
 import vertexShader from "assets/js/shader-1.vert";
 import fragmentShader from "assets/js/shader-1.frag";
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 
 export default {
   props: {
@@ -31,8 +32,16 @@ export default {
       threeRenderer: null,
       threeCamera: null,
       isThreeAnimation: true,
+      scene: null,
       isLoading: true,
       loadingProgress: 0,
+      uniforms: {
+        amplitude: { value: 1.0 },
+        uTexture: null
+      },
+      displacement: null,
+      noise: null,
+      rota: 0,
     }
   },
   computed: {
@@ -55,6 +64,39 @@ export default {
     */
     init() {
       console.log(this.imgList);
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // レンダラーを作成
+      const canvasElement = document.querySelector('#myCanvas')
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvasElement
+      });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(width, height);
+      this.threeRenderer = renderer;
+
+      // カメラを作成
+      const camera = new THREE.PerspectiveCamera(this.fov, width / height);
+      camera.position.z = this.distance;
+      camera.lookAt(new THREE.Vector3(0, 0, 0));
+      this.threeCamera = camera;
+
+      // シーンを作成
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xffffff);
+      this.scene = scene;
+
+      // const light = new THREE.AmbientLight(0xFFFFFF, 1.0);
+      // this.scene.add(light);
+
+      const controls = new OrbitControls( this.threeCamera, canvasElement );
+      //controls.enableZoom = false;
+
+      // show axes in the screen
+      const axes = new THREE.AxesHelper(500);
+      this.scene.add(axes);
 
       const manager = new THREE.LoadingManager();
 
@@ -86,19 +128,49 @@ export default {
           imgSrc,
 
           // onLoad callback
-          function ( texture ) {
+          ( texture ) => {
             console.log('texture = ', texture);
+
+            const geometry = new THREE.PlaneGeometry(1024, 683, 10, 10);
+
+            this.displacement = new Float32Array( geometry.attributes.position.count );
+            this.noise = new Float32Array( geometry.attributes.position.count );
+
+            for ( let i = 0; i < this.displacement.length; i ++ ) {
+
+              this.noise[ i ] = Math.random() * 5;
+
+            }
+
+            geometry.setAttribute( 'displacement', new THREE.BufferAttribute( this.displacement, 1 ) );
+
+            this.uniforms.uTexture = {value: texture};
+
+            const material = new THREE.ShaderMaterial({
+              uniforms: this.uniforms,
+              vertexShader: vertexShader,
+              fragmentShader: fragmentShader,
+              wireframe: false
+            });
+
+            console.log(material);
+            const plane = new THREE.Mesh( geometry, material );
+            this.scene.add( plane );
           },
 
           // onProgress callback currently not supported
           undefined,
 
           // onError callback
-          function () {
+          () => {
             console.error( 'An error happened.' );
           }
         );
       }
+
+      this.onResize();
+      this.animate();
+      window.addEventListener('resize', this.onResize, false);
     },
 
     /**
@@ -114,6 +186,16 @@ export default {
     },
 
     /**
+     * レンダリング
+     */
+    render() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      this.threeRenderer.render(this.scene, this.threeCamera);
+    },
+
+    /**
      * リサイズ処理
      */
     onResize() {
@@ -126,8 +208,8 @@ export default {
       this.threeCamera.updateProjectionMatrix();
 
       // レンダラーのサイズを調整する
-      this.renderer.setPixelRatio(window.devicePixelRatio);
-      this.renderer.setSize(this.width, this.height);
+      this.threeRenderer.setPixelRatio(window.devicePixelRatio);
+      this.threeRenderer.setSize(this.width, this.height);
     },
 
     /**
@@ -151,6 +233,7 @@ export default {
   top: 0;
   left: 0;
   background-color: black;
+  z-index: 100000;
 }
 
 #loader.active {
@@ -170,4 +253,12 @@ export default {
   color: white;
 }
 
+#myCanvas {
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
 </style>

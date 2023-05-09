@@ -1,8 +1,6 @@
-precision mediump float;
-uniform vec2 iResolution;
-uniform float iGlobalTime;
+uniform sampler2D uTexture;
+varying vec2 vUv;
 
-// This is my code
-void main(void) {
-  gl_FragColor = vec4(rgb, 1.0);
+void main(){
+  gl_FragColor = texture2D(uTexture, vUv);
 }
