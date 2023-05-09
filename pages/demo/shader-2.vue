@@ -1,6 +1,6 @@
 <template lang="pug">
 div
-  lv3-shader-img-1(:img-list='imgList')
+  lv3-shader-img-2(:img-list='imgList')
 </template>
 
 <style scoped>

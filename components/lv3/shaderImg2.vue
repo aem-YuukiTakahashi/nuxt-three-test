@@ -10,8 +10,8 @@
 <script>
 import GUI from 'lil-gui'
 import * as THREE from "three";
-import vertexShader from "assets/js/shader-1.vert";
-import fragmentShader from "assets/js/shader-1.frag";
+import vertexShader from "assets/js/shader-2.vert";
+import fragmentShader from "assets/js/shader-2.frag";
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 
 export default {
@@ -35,13 +35,35 @@ export default {
       scene: null,
       isLoading: true,
       loadingProgress: 0,
-      uniforms: {
-        amplitude: { value: 1.0 },
-        uTexture: null
+
+      mouse: {
+        x:0.5,
+        y:0.5
       },
+
+      // シェーダーのuniform変数
+      uniforms: {
+        // timeを設定
+        utime: { value: 0.5 },
+        amplitude: { value: 0.1 },
+        // 画像テクスチャー用の変数
+        uTexture: null,
+
+        uAspect: {
+          value: this.width / this.height
+        },
+        uTime: {
+          value: 0.0
+        },
+        uMouse: {
+          value: this.mouse
+        }
+      },
+
       displacement: null,
       noise: null,
       rota: 0,
+      geo: null
     }
   },
   computed: {
@@ -85,18 +107,17 @@ export default {
 
       // シーンを作成
       const scene = new THREE.Scene();
+      // シーンの背景色を白に設定
       scene.background = new THREE.Color(0xffffff);
       this.scene = scene;
 
-      // const light = new THREE.AmbientLight(0xFFFFFF, 1.0);
-      // this.scene.add(light);
-
       const controls = new OrbitControls( this.threeCamera, canvasElement );
-      //controls.enableZoom = false;
+      // OrbitControlsのzoomを無効化
+      controls.enableZoom = false;
 
-      // show axes in the screen
-      const axes = new THREE.AxesHelper(500);
-      this.scene.add(axes);
+      // AxesHelperをシーンに追加
+      const axesHelper = new THREE.AxesHelper(500);
+      this.scene.add(axesHelper);
 
       const manager = new THREE.LoadingManager();
 
@@ -129,20 +150,20 @@ export default {
 
           // onLoad callback
           ( texture ) => {
-            console.log('texture = ', texture);
 
             const geometry = new THREE.PlaneGeometry(1024, 683, 10, 10);
 
-            this.displacement = new Float32Array( geometry.attributes.position.count );
-            this.noise = new Float32Array( geometry.attributes.position.count );
+            this.displacement = this.noise = new Float32Array( geometry.attributes.position.count );
+            // dispalcementの中身をログ出力
+            console.log(this.displacement);
 
             for ( let i = 0; i < this.displacement.length; i ++ ) {
-
               this.noise[ i ] = Math.random() * 5;
-
             }
 
             geometry.setAttribute( 'displacement', new THREE.BufferAttribute( this.displacement, 1 ) );
+
+            this.geo = geometry;
 
             this.uniforms.uTexture = {value: texture};
 
@@ -153,8 +174,8 @@ export default {
               wireframe: false
             });
 
-            console.log(material);
             const plane = new THREE.Mesh( geometry, material );
+            this.geo = plane;
             this.scene.add( plane );
           },
 
@@ -171,6 +192,10 @@ export default {
       this.onResize();
       this.animate();
       window.addEventListener('resize', this.onResize, false);
+
+      window.addEventListener('mousemove', e => {
+        this.mouseMoved(e.clientX, e.clientY);
+      });
     },
 
     /**
@@ -192,6 +217,26 @@ export default {
       const width = window.innerWidth;
       const height = window.innerHeight;
 
+      const time = Date.now() * 0.01;
+
+      this.rota = 0.0001 * time;
+
+      this.uniforms.amplitude.value = 2.5 * Math.sin( this.rota * 0.125 );
+
+      if(this.displacement) {
+        for ( let i = 0; i < this.displacement.length; i ++ ) {
+
+            this.displacement[ i ] = Math.sin( 0.1 * i + time );
+
+            this.noise[ i ] += 0.5 * ( 0.5 - Math.random() );
+            this.noise[ i ] = THREE.MathUtils.clamp( this.noise[ i ], - 5, 5 );
+
+            this.displacement[ i ] += this.noise[ i ];
+
+        }
+        this.geo.geometry.attributes.displacement.needsUpdate = true;
+      }
+
       this.threeRenderer.render(this.scene, this.threeCamera);
     },
 
@@ -210,6 +255,11 @@ export default {
       // レンダラーのサイズを調整する
       this.threeRenderer.setPixelRatio(window.devicePixelRatio);
       this.threeRenderer.setSize(this.width, this.height);
+    },
+
+    mouseMoved(x, y) {
+      this.mouse.x = x / this.width;
+      this.mouse.y = 1.0 - (y / this.height);
     },
 
     /**
