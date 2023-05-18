@@ -1,15 +1,70 @@
 <template lang="pug">
-div
-  canvas#myCanvas(ref="canvas")
+.inner
+  h1 DEMO
+  .inner__wrapper
+    canvas#myCanvas(ref="canvas")
+
+    .config
+      h2 表画像変更
+      ul.config-img-list
+        li.config-img-list__item(v-for='(item, index) in loadFrontImgsList' :key='index')
+          img(:src='item' @click='currentFrontKey=`front-img-${index}`; changeFrontImg()')
+
+      h2 裏画像変更
+      ul.config-img-list
+        li.config-img-list__item(v-for='(item, index) in loadBackImgsList' :key='index')
+          img(:src='item' @click='currentBackKey=`back-img-${index}`;changeBackImg()')
+
+      h2 文字色変更
+      label 文字色変更 &nbsp;
+        input(type='color' v-model='textColor' @change='changeTextColor()')
 </template>
 
 <style scoped>
-#myCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
+.inner {
+  padding: 60px 20px 80px;
 }
+
+.inner__wrapper {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  line-height: 1;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+h2 {
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.config-img-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.config-img-list__item {
+  width: calc((100% - 30px) / 4);
+  margin-right: 10px;
+}
+
+.config-img-list__item::nth-child(4n){
+  margin-right: 0;
+}
+
+#myCanvas {
+  width: 100%;
+  height: 500px;
+  line-height: 1;
+}
+
 </style>
 
 <script>
@@ -23,7 +78,7 @@ export default {
       renderer: null,
       rendererBgColor: {
         color: '#000000',
-        opacity: 1
+        opacity: 0
       },
       scene: null,
       sceneBgColor: {
@@ -42,6 +97,7 @@ export default {
       currentFrontKey: 'front-img-0',
       currentBackKey: 'back-img-0',
 
+      textColor: '#000000',
       labelFont: 'EB Garamond',
       label1: 'No.',
       label2: 'Name.',
@@ -75,6 +131,10 @@ export default {
       card: null,
       frontCardImg: null,
       backCardImg: null,
+      label1Mesh: null,
+      label2Mesh: null,
+      value1Mesh: null,
+      value2Mesh: null,
     }
   },
   computed: {
@@ -82,7 +142,7 @@ export default {
       return (this.fov / 2) * (Math.PI / 180);
     },
     distance() {
-      return (window.innerHeight / 2) / Math.tan(this.fovRad);
+      return (550 / 2) / Math.tan(this.fovRad);
     },
   },
   mounted() {
@@ -95,8 +155,10 @@ export default {
     */
     init() {
 
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const inner = document.getElementsByClassName('inner__wrapper')[0];
+
+      const width = inner.clientWidth;
+      const height = 550;
 
       // レンダラーを作成
       const renderer = new THREE.WebGLRenderer({
@@ -121,12 +183,13 @@ export default {
       const card = new THREE.Group();
       // カードをz軸に45度傾ける
       card.rotation.z = Math.PI / 4;
+      card.scale.set(0.85, 0.85, 0.85);
       this.card = card;
       this.scene.add(this.card);
 
       // show axes in the screen
-      const axes = new THREE.AxesHelper(500);
-      scene.add(axes);
+      //const axes = new THREE.AxesHelper(500);
+      //scene.add(axes);
 
       this.load();
 
@@ -158,9 +221,6 @@ export default {
       // 画像が全部ロードされたらよばれる
       manager.onLoad = () => {
         console.log('Loading complete!');
-        console.log('ロードフォント = ', this.fontsList);
-        console.log('ロードフロント画像 = ', this.textureFrontList);
-        console.log('ロードバック画像 = ', this.textureBackList);
 
         // ロードが完了したらカードを作成
         this.createCard();
@@ -241,9 +301,11 @@ export default {
 
       // フロント用のジオメトリーを作成
       const frontGeometry = new THREE.PlaneGeometry(this.cardWidth, this.cardHeight);
+      //frontGeometry.applyMatrix4( new THREE.Matrix4().makeTranslation(110, 0, 0));
 
       // ジオメトリーとマテリアルからメッシュを作成
       const frontMesh = new THREE.Mesh(frontGeometry, frontMaterial);
+      frontMesh.position.z = 2;
       this.frontCardImg = frontMesh;
 
       // バックのテクスチャーを取得
@@ -259,6 +321,7 @@ export default {
 
       // バック用のジオメトリーを作成
       const backGeometry = new THREE.PlaneGeometry(this.cardWidth, this.cardHeight);
+      //backGeometry.applyMatrix4( new THREE.Matrix4().makeTranslation(-110, 0, 0));
 
       // ジオメトリーとマテリアルからメッシュを作成
       const backMesh = new THREE.Mesh(backGeometry, backMaterial);
@@ -276,7 +339,7 @@ export default {
         size: 15,
         height: 1,
         curveSegments: 12,
-        bevelEnabled: true,
+        bevelEnabled: false,
         bevelThickness: 1,
         bevelSize: 1,
         bevelSegments: 1,
@@ -284,6 +347,7 @@ export default {
 
       // ラベル1のテキストジオメトリーを作成
       const label1Geometry = new TextGeometry(this.label1, labelFontOption);
+      //label1Geometry.applyMatrix4( new THREE.Matrix4().makeTranslation(100, 0, 0));
       label1Geometry.computeBoundingBox();
       const textMaterial = new THREE.MeshBasicMaterial({
          color: `#000`, // 文字の色
@@ -291,15 +355,18 @@ export default {
       const label1 = new THREE.Mesh(label1Geometry, textMaterial)
       label1.position.x = -230;
       label1.position.y = -100;
-      label1.position.z = 3;
+      label1.position.z = 2;
+      this.label1Mesh = label1;
 
       // ラベル2のテキストジオメトリーを作成
       const label2Geometry = new TextGeometry(this.label2, labelFontOption);
+      //label2Geometry.applyMatrix4( new THREE.Matrix4().makeTranslation(100, 0, 0));
       label2Geometry.computeBoundingBox();
       const label2 = new THREE.Mesh(label2Geometry, textMaterial)
       label2.position.x = -230;
       label2.position.y = -130;
       label2.position.z = 3;
+      this.label2Mesh = label2;
 
       // バリューで使用するフォントを取得する
       const currentValueFont = this.fontsList.find((value) => {
@@ -310,9 +377,9 @@ export default {
       const valueOption = {
         font: currentValueFont,
         size: 15,
-        height: 1,
+        height: 0.1,
         curveSegments: 12,
-        bevelEnabled: true,
+        bevelEnabled: false,
         bevelThickness: 1,
         bevelSize: 1,
         bevelSegments: 1,
@@ -325,6 +392,7 @@ export default {
       value1.position.x = -230 + label1Geometry.boundingBox.max.x + 20;
       value1.position.y = -100;
       value1.position.z = 3;
+      this.value1Mesh = value1;
 
       // バリュー2のテキストジオメトリーを作成
       const value2Geometry = new TextGeometry(this.value2, valueOption);
@@ -333,6 +401,7 @@ export default {
       value2.position.x = -230 + label2Geometry.boundingBox.max.x + 20;
       value2.position.y = -130;
       value2.position.z = 3;
+      this.value2Mesh = value2;
 
       // グループにそれぞれのメッシュを追加
       this.card.add(frontMesh);
@@ -344,11 +413,60 @@ export default {
     },
 
     /**
+     * フロント画像変更
+     */
+    changeFrontImg() {
+
+      // フロントのテクスチャーを取得
+      const currentFrontTexture = this.textureFrontList.find((value) => {
+        return value.name === this.currentFrontKey;
+      });
+
+      const frontMaterial = new THREE.MeshBasicMaterial({
+        map: currentFrontTexture,
+        side: THREE.FrontSide,
+      });
+
+      this.frontCardImg.material = frontMaterial;
+    },
+
+    /**
+     * バック画像変更
+     */
+    changeBackImg() {
+      // バックのテクスチャーを取得
+      const currentBackTexture = this.textureBackList.find((value) => {
+        return value.name === this.currentBackKey;
+      });
+
+      // バックのテクスチャーからマテリアルを作成
+      const backMaterial = new THREE.MeshBasicMaterial({
+        map: currentBackTexture,
+        side: THREE.FrontSide,
+      });
+
+      this.backCardImg.material = backMaterial;
+    },
+
+    /**
+     * 文字色変更
+     */
+    changeTextColor() {
+      console.log(this.textColor);
+      const textMaterial = new THREE.MeshBasicMaterial({
+         color: this.textColor,
+      });
+
+      this.label1Mesh.material = this.label2Mesh.material = this.value1Mesh.material = this.value2Mesh.material = textMaterial;
+    },
+
+    /**
      * レンダリング
      */
     render() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const inner = document.getElementsByClassName('inner__wrapper')[0];
+      const width = inner.clientWidth;
+      const height = 550;
 
       this.card.rotation.y += 0.01;
 
@@ -360,8 +478,9 @@ export default {
      */
     onResize() {
       // サイズを取得
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+      const inner = document.getElementsByClassName('inner__wrapper')[0];
+      const width = inner.clientWidth;
+      const height = 550;
 
       // カメラのアスペクト比を正す
       this.camera.aspect = width / height;
@@ -376,7 +495,7 @@ export default {
      * GUI 初期化
      */
     initGui() {
-      const gui = new GUI();
+      //const gui = new GUI();
     },
   },
   beforeDestroy: function() {
