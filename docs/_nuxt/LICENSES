@@ -1,4 +1,11 @@
 /**
+ * @license
+ * Copyright 2010-2022 Three.js Authors
+ * SPDX-License-Identifier: MIT
+ */
+
+
+/**
  * lil-gui
  * https://lil-gui.georgealways.com
  * @version 0.17.0
@@ -11,13 +18,6 @@
  * Vue.js v2.7.12
  * (c) 2014-2022 Evan You
  * Released under the MIT License.
- */
-
-
-/**
- * @license
- * Copyright 2010-2022 Three.js Authors
- * SPDX-License-Identifier: MIT
  */
 
 
