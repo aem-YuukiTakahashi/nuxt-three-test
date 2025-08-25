@@ -2,7 +2,7 @@
 #container(v-if='isPlaying')
   #wrapper
     video#movie(muted playsinline)
-      source(src='/movie/movie.mp4' type='video/mp4')
+      source(src='movie/movie.mp4' type='video/mp4')
   #loading
     p LOADING...
   button#skip SKIP
@@ -74,15 +74,42 @@ export default {
 
       // 動画が再生された時にローディングを非表示にする
       this.videoHandlerPlay = () => {
+        alert('動画を再生します');
         this.loadingEl.style.display = 'none';
         this.skipEl.style.display = 'block';
       };
 
       // 動画が再生できる状態になったらローディングを非表示にする
-      this.videoHandlerCanplaythrough = () => {
+      this.videoHandlerCanplaythrough = (event) => {
         this.loadingEl.style.display = 'none';
         this.skipEl.style.display = 'block';
-        this.movieEl.play().catch(() => {
+
+        // エラーの詳細を確認
+        const video = event.target;
+        if (video.error) {
+          const errorCode = video.error.code;
+          const errorMessage = video.error.message;
+
+          console.error(`エラーコード: ${errorCode}, メッセージ: ${errorMessage}`);
+          alert(`エラーコード: ${errorCode}, メッセージ: ${errorMessage}`);
+        }
+
+        this.movieEl.play().catch((error) => {
+          console.error('動画再生エラー:', error);
+
+          let errorMessage = '動画の再生に失敗しました';
+
+          if (error.name) {
+            errorMessage += `\nエラー名: ${error.name}`;
+          }
+          if (error.message) {
+            errorMessage += `\nエラーメッセージ: ${error.message}`;
+          }
+          if (error.code) {
+            errorMessage += `\nエラーコード: ${error.code}`;
+          }
+
+          alert(errorMessage);
           showContent();
         });
       };
@@ -94,6 +121,7 @@ export default {
 
       // 動画が再生できなかったらコンテンツを表示する
       this.videoHandlerError = () => {
+        alert('動画を再生できませんでした');
         showContent();
       };
 
