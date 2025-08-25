@@ -51,7 +51,7 @@ export default {
       console.log('loadingEl', this.loadingEl);
       console.log('skipEl', this.skipEl);
 
-      alert(`movieEl: ${this.movieEl}, loadingEl: ${this.loadingEl}, skipEl: ${this.skipEl}`);
+      // alert(`movieEl: ${this.movieEl}, loadingEl: ${this.loadingEl}, skipEl: ${this.skipEl}`);
 
       if (!this.movieEl || !this.loadingEl || !this.skipEl) {
         console.error('movieEl, loadingEl, skipEl is not found');
@@ -76,14 +76,14 @@ export default {
 
       // 動画が再生された時にローディングを非表示にする
       this.videoHandlerPlay = () => {
-        alert('動画を再生します');
+        // alert('動画を再生します');
         this.loadingEl.style.display = 'none';
         this.skipEl.style.display = 'block';
       };
 
       // 動画が再生できる状態になったらローディングを非表示にする
       this.videoHandlerCanplaythrough = (event) => {
-        alert('動画を再生できる状態になりました');
+        // alert('動画を再生できる状態になりました');
 
         this.loadingEl.style.display = 'none';
         this.skipEl.style.display = 'block';
@@ -98,6 +98,7 @@ export default {
           alert(`エラーコード: ${errorCode}, メッセージ: ${errorMessage}`);
         }
 
+        // 動画を再生（Promiseのエラーハンドリング付き）
         this.movieEl.play().catch((error) => {
           console.error('動画再生エラー:', error);
 
@@ -120,6 +121,8 @@ export default {
 
       // 動画が再生終了したらコンテンツを表示する
       this.videoHandlerEnded = () => {
+        // alert('動画が再生終了しました');
+        console.log('動画が再生終了しました');
         showContent();
       };
 
@@ -144,6 +147,7 @@ export default {
 
       // 動画を再生
       this.movieEl.play();
+
     },
   },
 };
