@@ -11,9 +11,9 @@ export default {
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'viewport-extra', content: 'min-width=375' },
       { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { name: 'format-detection', content: 'telephone=no' },
+      { name: 'robots', content: 'noindex, nofollow' }
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
@@ -25,8 +25,8 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
-    { src: '~/plugins/viewport-extra.js', ssr: false },
-    { src: '@/plugins/vue-observe-visibility.js', ssr: false },
+    // { src: '~/plugins/viewport-extra.js', ssr: false },
+    // { src: '@/plugins/vue-observe-visibility.js', ssr: false },
     //{ src: '~/plugins/bubbly-bg.js', ssr: false },
   ],
 
