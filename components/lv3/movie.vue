@@ -51,6 +51,8 @@ export default {
       console.log('loadingEl', this.loadingEl);
       console.log('skipEl', this.skipEl);
 
+      alert(`movieEl: ${this.movieEl}, loadingEl: ${this.loadingEl}, skipEl: ${this.skipEl}`);
+
       if (!this.movieEl || !this.loadingEl || !this.skipEl) {
         console.error('movieEl, loadingEl, skipEl is not found');
         alert('movieEl, loadingEl, skipEl is not found');
@@ -81,6 +83,8 @@ export default {
 
       // 動画が再生できる状態になったらローディングを非表示にする
       this.videoHandlerCanplaythrough = (event) => {
+        alert('動画を再生できる状態になりました');
+
         this.loadingEl.style.display = 'none';
         this.skipEl.style.display = 'block';
 
@@ -214,7 +218,8 @@ export default {
     bottom: 20px;
     z-index: 102;
     transition: background-color 0.3s ease;
-    display: none;
+
+    display: block;
   }
 }
 </style>
