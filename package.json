@@ -19,12 +19,19 @@
     "three": "^0.145.0",
     "viewport-extra": "^2.1.4",
     "vue": "^2.7.10",
+    "vue-observe-visibility": "^1.0.0",
     "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10"
+    "vue-template-compiler": "^2.7.10",
+    "sass": "^1.32.12",
+    "sass-loader": "^10.2.0"
   },
   "devDependencies": {
     "lil-gui": "^0.17.0",
     "modern-css-reset": "^1.4.0",
     "raw-loader": "^4.0.2"
+  },
+  "volta": {
+    "node": "14.17.0",
+    "npm": "7.20.5"
   }
 }
