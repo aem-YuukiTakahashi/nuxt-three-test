@@ -1,7 +1,7 @@
 <template lang="pug">
 #container(v-if='isPlaying')
   #wrapper
-    video#movie(muted playsinline)
+    video#movie(muted playsinline autoplay)
       source(src='movie/movie.mp4' type='video/mp4')
   #loading
     p LOADING...
@@ -144,9 +144,6 @@ export default {
       this.skipEl.addEventListener('click', this.skipButtonHandler);
       this.movieEl.addEventListener('ended', this.videoHandlerEnded);
       this.movieEl.addEventListener('error', this.videoHandlerError);
-
-      // 動画を再生
-      this.movieEl.play();
 
     },
   },
